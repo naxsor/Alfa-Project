@@ -2,21 +2,16 @@ import datetime
 import json
 import data as d
 
-from instrumentConfig import instrumentConfig
+
 
 #creater instrumen object
 class instrument:
 
-    instCount = 0
-
-    def __init__(self, id, name, signalType, data):
-        self.id = self.instCount
+    def __init__(self, id, name, config_file, file_path):
+        self.id = id
         self.name = name
-        self.status = 0
-        self.signalType = signalType
-        self.data = data
-        instrument.instCount += 1
-        self.instCount += 1
+        self.config_file = config_file
+        self.data = d.data(file_path)
 
     def statusCheck(self, x):
         if x == 1:

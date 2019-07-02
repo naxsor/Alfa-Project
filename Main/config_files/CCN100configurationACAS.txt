@@ -1,0 +1,52 @@
+CCN100_Configuration
+//Title:ACAS 2019
+//Number of Channels
+20
+//Size Thresholds
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+//Line where Data starts (line 0 is first physical line in file)
+6
+//Column where %SS is found (Time is in column 0)
+1
+//Column where PSD begins
+25
+//Column with sample flow rate
+17
+//Column where house keeping begins
+3
+//Number of housekeeping parameters
+14
+//Housekeeping Names
+Delta T
+T1 Set
+T1 Read
+T2 Set
+T2 Read
+T3 Set
+T3 Read
+Nafion Set
+T Nafion
+Inlet Set
+T Inlet
+OPC Set
+T OPC
+T Sample

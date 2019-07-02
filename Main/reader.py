@@ -2,32 +2,41 @@ import data as d
 import pandas as pd
 import numpy as np
 import h5py as h5
+import os.path, time
+import shutil
 
-from Main.extensionManager import extensionManager as ext_mng
-from instrumentConfig import instrumentConfig
+from instrument_info import WIBS_NEO, CCN
 
 
 
 class reader:
     def __init__(self, file_path):
-        self.extensionmngr = ext_mng(file_path)
-        self.ext = self.extensionmngr.extensionReader()
+        self.ext = os.path.splitext(file_path)[-1].lower()
         self.data = d.data(file_path)
         self.num_lines = d.data.getNum_line(self.data)
-        self.readerSelector()
-        # self.getData()
+        self.extensionReader()
 
-    def readerSelector(self):
-        if self.ext == 1:
-            print ('Calling CSV reader...')
-            self.readerCSV()
-            return 1
-        elif self.ext == 3:
-            print ('Calling h5 reader...')
-            self.readerh5()
-            return 3
 
-    def readerCSV(self):
+    def extensionReader(self):
+        if self.ext == '.csv':
+            self.readerSelector(1)
+        elif self.ext == '.dat':
+            self.readerSelector(2)
+        elif self.ext == '.h5':
+            self.readerSelector(3)
+        else:
+            print ('No file extension detected')
+            return False
+
+    #Calls Specific Reader
+    def readerSelector(self, int):
+        if int == 1:
+            self.readerCCN()
+        elif int == 3:
+            self.readerNEO()
+
+    #Reader for CCN File
+    def readerCCN(self):
         with open(d.data.getfile_path(self.data), 'r') as file:
             d.data.setorigin_path(self.data, next(file))
             d.data.setDate(self.data, next(file))
@@ -40,35 +49,30 @@ class reader:
             d.data.setDataframe(self.data, dataframe)
             d.data.setNumlines(self.data, len(dataframe))
 
-    def readerh5(self):
+    #Reader for NEO file
+    def readerNEO(self):
 
         dataframe_list = []
-        header = instrumentConfig.WIBS_NEO('instrumentVariables')
 
-
-        def get_all(name):
-            print(name)
-
-        def merge():
-            merged = dataframe_list[0]
-            for i in range(len(dataframe_list)):
-                merged = pd.concat([merged, dataframe_list[i+1]], axis=1, sort=False)
-
+        #Iterate through .h5 file
         def get_objects(name, obj):
             if isinstance(obj, h5.Dataset):
-                print (obj)
                 dataframe = pd.DataFrame(obj)
                 dataframe_list.append(dataframe)
 
+        def merge():
+            #Extract a concatenate dataframes from data sets in dataframe list
+            for i in range(len(dataframe_list)):
+                if i == 0:
+                    merged = dataframe_list[i]
+                else:
+                    merged = pd.concat([merged, dataframe_list[i]], axis=1, sort=False)
+            #Set Column Headers
+            merged.columns = WIBS_NEO.instrumentVariables
+            d.data.setDataframe(self.data, merged)
 
         with h5.File(d.data.getfile_path(self.data), 'r') as file:
-            MonitoringData = file.get('/NEO/MonitoringData')
-            ParticleData = file.get('/NEO/ParticleData')
-            NEO_MonitorinData = list(MonitoringData.items())
-            NEO_ParticleData = list(ParticleData.items())
             file.visititems(get_objects)
             merge()
 
 
-    def getData(self):
-        return self.data
